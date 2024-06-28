@@ -44,6 +44,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var dbUser models.User
 	if err := database.DB.Where("username = ?", user.Username).First(&dbUser).Error; err != nil {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
@@ -51,9 +52,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := time.Now().Add(24 * time.Hour)
+	expirationTime := time.Now().Add(7 * 24 * time.Hour) // Set expiration time to 7 days
+
 	claims := &Claims{
-		Username: user.Username,
+		Username: dbUser.Username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -71,4 +73,27 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Value:   tokenString,
 		Expires: expirationTime,
 	})
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value("claims").(*Claims)
+	if !ok {
+		http.Error(w, "invalid token", http.StatusForbidden)
+		return
+	}
+
+	userID := claims.Id // Assuming the ID field in Claims is named Id (note the capital "I")
+
+	var user models.User
+	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	if err := database.DB.Delete(&user).Error; err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

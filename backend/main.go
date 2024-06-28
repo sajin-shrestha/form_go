@@ -23,6 +23,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/register", handlers.Register).Methods("POST")
 	router.HandleFunc("/login", handlers.Login).Methods("POST")
+	router.HandleFunc("/delete/{id}", middleware.AuthMiddleware(handlers.DeleteUser)).Methods("DELETE")
 	router.HandleFunc("/home", middleware.AuthMiddleware(handlers.Home)).Methods("GET")
 
 	log.Println("server running on port: " + os.Getenv("PORT"))

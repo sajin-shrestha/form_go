@@ -9,17 +9,23 @@ import (
 	"github.com/sajin-shrestha/form_go/utils"
 )
 
+type contextKey string
+
+const (
+	contextKeyClaims contextKey = "claims"
+)
+
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.Error(w, "Forbidden status 1", http.StatusForbidden)
 			return
 		}
 
 		bearerToken := strings.Split(authHeader, " ")
 		if len(bearerToken) != 2 {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.Error(w, "Forbidden status 2", http.StatusForbidden)
 			return
 		}
 
@@ -30,11 +36,11 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "claims", claims)
+		ctx := context.WithValue(r.Context(), contextKeyClaims, claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
