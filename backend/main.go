@@ -22,7 +22,7 @@ func main() {
 
 	database.ConnectDB()
 
-	corsOptions := handlers.AllowedOrigins([]string{"http://localhost:5173"})
+	corsOptions := handlers.AllowedOrigins([]string{"*"})
 	corsHandler := handlers.CORS(corsOptions)
 
 	router := mux.NewRouter()
