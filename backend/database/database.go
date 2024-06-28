@@ -12,7 +12,7 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s pprt=%s sslmode=disable",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		utils.GetEnv("DB_HOST"),
 		utils.GetEnv("DB_USER"),
 		utils.GetEnv("DB_PASSWORD"),

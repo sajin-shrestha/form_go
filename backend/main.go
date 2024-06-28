@@ -2,10 +2,14 @@ package main
 
 import (
 	"log"
+	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/sajin-shrestha/form_go/database"
+	"github.com/sajin-shrestha/form_go/handlers"
+	"github.com/sajin-shrestha/form_go/middleware"
 )
 
 func main() {
@@ -17,5 +21,10 @@ func main() {
 	database.ConnectDB()
 
 	router := mux.NewRouter()
-	router.
+	router.HandleFunc("/register", handlers.Register).Methods("POST")
+	router.HandleFunc("/login", handlers.Login).Methods("POST")
+	router.HandleFunc("/home", middleware.AuthMiddleware(handlers.Home)).Methods("GET")
+
+	log.Println("server running on port: " + os.Getenv("PORT"))
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), router))
 }
